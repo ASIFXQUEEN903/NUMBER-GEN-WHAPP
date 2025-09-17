@@ -1,0 +1,12 @@
+{
+  "name": "Telegram Bot by Asif",
+  "description": "A simple Telegram bot with buttons.",
+  "repository": "https://github.com/Asifxqueen/telegram-bot",
+  "keywords": ["telegram", "bot", "python"],
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token",
+      "required": true
+    }
+  }
+}
