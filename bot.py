@@ -2,24 +2,24 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 
+# Bot Token (Heroku/GitHub me Config Vars me set karo)
 TOKEN = os.environ.get("BOT_TOKEN")
+
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    # Stylish Welcome Text
+    welcome_text = (
+        "✨ 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 𝐍𝐮𝐦𝐛𝐞𝐫 𝐆𝐞𝐧 𝐁𝐨𝐭 ✨\n\n"
+        "⚡ Created with ❤️ by ARAME9 ⚡"
+    )
+
+    # Button with Nobita_903
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("📂 File", callback_data="file"))
-    markup.add(InlineKeyboardButton("📞 Manual Number", callback_data="manual"))
-    markup.add(InlineKeyboardButton("⚙️ App JSON", callback_data="json"))
-    bot.send_message(message.chat.id, "Hey! Choose an option below 👇", reply_markup=markup)
+    markup.add(InlineKeyboardButton("👑 Nobita_903", url="https://t.me/Nobita_903"))
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call):
-    if call.data == "file":
-        bot.send_message(call.message.chat.id, "📂 You clicked on File.")
-    elif call.data == "manual":
-        bot.send_message(call.message.chat.id, "📞 You clicked on Manual Number.")
-    elif call.data == "json":
-        bot.send_message(call.message.chat.id, "⚙️ You clicked on App JSON.")
+    bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
+# Run Bot
 bot.infinity_polling()
