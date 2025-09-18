@@ -107,6 +107,122 @@ def cmd_gen(m):
         {"$set": {"user_id": m.from_user.id, "chat_id": m.chat.id, "state": "await_numbers"}},
         upsert=True,
     )
+    bot.reply_to(m, "📂 Send a .txt file or paste numbers (one per line).")
+
+
+@bot.message_handler(content_types=['document'])
+def handle_document(m):
+    s = sessions_coll.find_one({"user_id": m.from_user.id})
+    if not s or s.get("state") != "await_numbers":
+        return
+    try:
+        file_info = bot.get_file(m.document.file_id)
+        downloaded = bot.download_file(file_info.file_path)
+        text = downloaded.decode('utf-8', errors='ignore')
+    except:
+        bot.reply_to(m, "❌ Error reading file.")
+        return
+    nums = parse_numbers_from_text(text)
+    if not nums:
+        bot.reply_to(m, "❌ No valid numbers found.")
+        return
+    replace_list(m.chat.id, nums)
+    # Save state to ask country code
+    sessions_coll.update_one(
+        {"user_id": m.from_user.id},
+        {"$set": {"state": "await_country"}}
+    )
+    bot.reply_to(m, f"✅ Saved {len(nums)} numbers.\n🌍 Please send country code (example: +91)")
+
+
+@bot.message_handler(func=lambda msg: True, content_types=['text'])
+def handle_text(msg):
+    s = sessions_coll.find_one({"user_id": msg.from_user.id})
+    if not s:
+        bot.reply_to(msg, "Use /gen to upload numbers or /start to see welcome.")
+        return
+
+    if s.get("state") == "await_numbers":
+        nums = parse_numbers_from_text(msg.text)
+        if not nums:
+            bot.reply_to(msg, "❌ No valid numbers found.")
+            return
+        replace_list(msg.chat.id, nums)
+        sessions_coll.update_one(
+            {"user_id": msg.from_user.id},
+            {"$set": {"state": "await_country"}}
+        )
+        bot.reply_to(msg, f"✅ Saved {len(nums)} numbers.\n🌍 Please send country code (example: +91)")
+
+    elif s.get("state") == "await_country":
+        cc = msg.text.strip()
+        if not cc.startswith("+") or not cc[1:].isdigit():
+            bot.reply_to(msg, "❌ Invalid country code. Example: +91")
+            return
+        sessions_coll.update_one(
+            {"user_id": msg.from_user.id},
+            {"$set": {"state": "ready", "country_code": cc}}
+        )
+        bot.reply_to(msg, f"✅ Country code set to {cc}\nClick below to get numbers.", reply_markup=start_kb())
+
+
+# -----------------------
+# Inline Keyboards
+# -----------------------
+def start_kb():
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton("▶️ Get Number", callback_data="get_number"))
+    return kb
+
+
+# -----------------------
+# Callbacks
+# -----------------------
+@bot.callback_query_handler(func=lambda call: True)
+def cb(call):
+    if call.data == "get_number":
+        send_one(call.message.chat.id)
+
+
+# -----------------------
+# Core
+# -----------------------
+def send_one(chat_id: int):
+    s = sessions_coll.find_one({"chat_id": chat_id})
+    if not s or s.get("state") != "ready":
+        bot.send_message(chat_id, "⚠️ Please /gen to upload file and set country code first.")
+        return
+
+    pick = pick_random_unused(chat_id)
+    if not pick:
+        bot.send_message(chat_id, "🎉 All numbers are finished.")
+        return
+
+    num = pick["normalized"]
+    cc = s.get("country_code")
+    if cc and num.startswith(cc.replace("+", "")):
+        num = num[len(cc) - 1 :]  # remove cc digits
+
+    mark_used(chat_id, pick["normalized"])
+    bot.send_message(
+        chat_id,
+        f"<code>{num}</code>",
+        reply_markup=start_kb(),
+        parse_mode="HTML"
+    )
+
+
+# -----------------------
+# Run bot
+# -----------------------
+if __name__ == "__main__":
+    print("Bot started")
+    bot.infinity_polling(timeout=60, long_polling_timeout=90)def cmd_gen(m):
+    sessions_coll.update_one(
+        {"user_id": m.from_user.id},
+        {"$set": {"user_id": m.from_user.id, "chat_id": m.chat.id, "state": "await_numbers"}},
+        upsert=True,
+    )
     bot.reply_to(m, "Send a .txt file or paste numbers (one per line).")
 
 
