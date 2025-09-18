@@ -1,18 +1,24 @@
-# Telegram Bot 🚀
+# NUMBER-GEN-WHAPP
 
-This is a simple Telegram bot built with Python.
+Telegram bot to generate & manage numbers with stylish welcome.
 
-## Features
-- Start command with buttons
-- Options for File, Manual Number, and App JSON
+---
 
-## Deploy to Heroku
-Click below to deploy:
+## 🚀 Deploy to Heroku
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+Click the button below to deploy:
 
-### Local Setup
-1. Clone the repo
-2. Install requirements: `pip install -r requirements.txt`
-3. Run the bot: `python bot.py`
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/ASIFXQUEEN903/NUMBER-GEN-WHAPP)
 
+---
+
+### ⚙️ Setup
+
+1. Get a **Telegram Bot Token** from [@BotFather](https://t.me/BotFather).
+2. Get a free **MongoDB URL** from [MongoDB Atlas](https://www.mongodb.com/atlas/database).
+3. While deploying, add these Config Vars on Heroku:
+   - `BOT_TOKEN` → Your Telegram Bot Token  
+   - `MONGO_URL` → Your MongoDB connection string  
+   - `OWNER_ID` → Your Telegram ID  
+
+4. Done! Your bot will be live 🚀
